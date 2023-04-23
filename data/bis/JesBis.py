@@ -1,65 +1,41 @@
-from root.base.wrapper.EvsWrapper import EvsWrapper
-from root.utils.StateUtils import StateUtils
-from root.plux.XState import XSkin
-from pydantic import BaseModel
-from pydantic import BaseModel, create_model
+import time
+from json import load
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from data.config.DataConfig import dataconf
+
 
 class JesHit:
     def __init__(self):
-        pass
-
-    @XSkin()
-    def km0(self, state: StateUtils):
-        print('km0')
-        state.errn('fff')
-
-    @XSkin()
-    def km1(self, state: StateUtils):
-        print('km1')
-
+        self.options = Options()
+        self.options.add_experimental_option('debuggerAddress', f'{dataconf.host}:{dataconf.port}')
+        self.service = Service(executable_path=dataconf.executable_path)
 
 class JesBis(JesHit):
     def __init__(self):
         JesHit.__init__(self)
+    def km1(self):
+        f = open(file=r'C:\Kac\Python\Ius\data.json',encoding='UTF-8',mode='r')
+        d = load(f)
+        f.close()
+        return d
 
-    @EvsWrapper()
-    def k0(self, state: StateUtils):
-        self.km0(state=state)
-        self.km1(state=state)
+    def km0(self,uid:str):
+        driver = webdriver.Chrome(service=self.service, options=self.options)
+        if driver.current_url[30:38] == uid:
+            pass
+        else:
+            driver.get(f'https://www.netflix.com/watch/{uid}')
+            time.sleep(1)
+        return driver.execute_script('return window.lln.subManager.data')
 
-
+    def km2(self,uid):
+        if dataconf.clash:
+            return self.km0(uid)
+        else:
+            return self.km1()
 if __name__ == '__main__':
-    from pydantic import BaseModel, create_model
-
-    user_dict = {
-        "id": 1,
-        "name": "John Doe",
-        "email": "johndoe@example.com",
-        "ww":{
-            'wwc':'wf'
-        }
-    }
-
-    User = type("User", (BaseModel,), user_dict)
-    print(User.schema())
-    class Ww:
-        wwc:str
-    class User:
-        id:int
-        name:str
-        email:str
-        ww:Ww
-    #
-    # User = create_model(
-    #     "User",
-    #     **user_dict
-    # )
-    #
-    # class_definition = User.__fields__
-    # class_name = User.__name__
-    #
-    # field_definitions = "\n".join([f"    {key}: {value.type_.__name__}" for key, value in class_definition.items()])
-    #
-    # model_definition = f"class {class_name}(BaseModel):\n{field_definitions}\n\n    class Config:\n        title = '{class_name}'"
-    #
-    # print(model_definition)
+    jes = JesBis()
+    a0 = jes.km2('70196279')
+    print(a0)
